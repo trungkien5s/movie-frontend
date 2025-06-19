@@ -11,7 +11,7 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                         <div className="w-20 h-28 rounded overflow-hidden relative group cursor-pointer">
                             <img src={movie.image || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <Play className="w-6 h-6 text-yellow-500 fill-current" />
+                                <Play className="w-6 h-6 text-red-500 fill-current" />
                             </div>
                         </div>
                     </div>
@@ -19,7 +19,7 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                     {/* Movie Info */}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-white font-semibold text-lg hover:text-yellow-500 transition-colors cursor-pointer truncate">
+                            <h3 className="text-white font-semibold text-lg hover:text-red-500 transition-colors cursor-pointer truncate">
                                 {movie.title}
                             </h3>
                             <Badge className="bg-red-600 text-white text-xs ml-2 flex-shrink-0">{movie.quality}</Badge>
@@ -31,7 +31,7 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                                 <span>{movie.year}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                                <Star className="w-4 h-4 fill-red-500 text-red-500" />
                                 <span>{movie.rating}</span>
                             </div>
                             <div className="flex items-center gap-1">
@@ -66,7 +66,7 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
 
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                             <Play className="w-6 h-6 text-black fill-current ml-1" />
                         </div>
                     </div>
@@ -79,7 +79,7 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
 
                 {/* Movie Info */}
                 <div className="p-3">
-                    <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2 group-hover:text-yellow-500 transition-colors">
+                    <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2 group-hover:text-red-500 transition-colors">
                         {movie.title}
                     </h3>
                     <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
