@@ -1,23 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import {Suspense, useEffect, useState} from "react";
+import {Route, Routes} from "react-router-dom";
+import SignInPage from "./pages/auth/SignInPage";
+import SignUpPage from "./pages/auth/SignUpPage";
+import DashboardPage from "./pages/DashboardPage";
+import HomePage from "./pages/HomePage/HomePage";
+import MoviePage from "./pages/MoviePage/MoviePage";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/auth/sign-in" element={<SignInPage />} />
+          <Route path="/phim-le" element={<MoviePage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth/sign-up" element={<SignUpPage />} />
+        </Routes>
+          </Suspense>
+
     </div>
   );
 }
