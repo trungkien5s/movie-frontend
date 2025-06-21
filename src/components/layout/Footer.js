@@ -12,7 +12,7 @@ export default function Footer() {
                                 <span className="text-black font-bold text-lg">M</span>
                             </div>
                             <div>
-                                <h3 className="text-red-600 font-bold text-xl">Mê Phim</h3>
+                                <h3 className="text-white font-bold text-xl">Mê Phim</h3>
                             </div>
                         </div>
                         <p className="text-gray-400 text-sm leading-relaxed">
@@ -20,16 +20,16 @@ export default function Footer() {
                             trải nghiệm xem tuyệt vời.
                         </p>
                         <div className="flex space-x-4">
-                            <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors">
+                            <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
                                 <Facebook className="w-5 h-5" />
                             </a>
-                            <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors">
+                            <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
                                 <Twitter className="w-5 h-5" />
                             </a>
-                            <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors">
+                            <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors">
+                            <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
                                 <Youtube className="w-5 h-5" />
                             </a>
                         </div>
@@ -114,15 +114,15 @@ export default function Footer() {
                         <h4 className="text-white font-semibold text-lg">Liên hệ</h4>
                         <div className="space-y-3">
                             <div className="flex items-center space-x-3">
-                                <MapPin className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
                                 <span className="text-gray-400 text-sm">Cầu Giấy , Hà Nội</span>
                             </div>
                             <div className="flex items-center space-x-3">
-                                <Phone className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
                                 <span className="text-gray-400 text-sm">+84 0376 940 811</span>
                             </div>
                             <div className="flex items-center space-x-3">
-                                <Mail className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                <Mail className="w-4 h-4 text-red-500 flex-shrink-0" />
                                 <span className="text-gray-400 text-sm">mephim@gmail.com</span>
                             </div>
                         </div>
@@ -134,9 +134,9 @@ export default function Footer() {
                                 <input
                                     type="email"
                                     placeholder="Email của bạn"
-                                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white text-sm focus:outline-none focus:border-yellow-500"
+                                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white text-sm focus:outline-none focus:border-gray-500"
                                 />
-                                <button className="px-4 py-2 bg-yellow-500 text-black font-medium rounded-r-md hover:bg-yellow-600 transition-colors">
+                                <button className="px-4 py-2 bg-red-500 text-white font-medium rounded-r-md hover:bg-red-600 transition-colors">
                                     Đăng ký
                                 </button>
                             </div>

@@ -191,7 +191,7 @@ export default function Header() {
                         </nav>
 
                         {/* Right side - User menu + Mobile menu button */}
-                        <div className="flex items-center space-x-4 flex-shrink-0">
+                        <div className="flex items-center space-x-4 flex-shrink-0  ">
                             {/* User Authentication */}
                             {isAuthenticated && user ? (
                                 <div className="relative">
@@ -254,7 +254,7 @@ export default function Header() {
                                     <Button
                                         onClick={() => navigate("/auth/sign-in")}
                                         variant="outline"
-                                        className="border-gray-600 text-white hover:bg-gray-800 transition-colors text-sm"
+                                        className="border-red-600 text-white hover:bg-red-800 transition-colors text-sm"
                                     >
                                         <User className="w-4 h-4 mr-2" />
                                         Đăng nhập
