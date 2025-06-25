@@ -114,14 +114,6 @@ export default function Footer() {
                         <h4 className="text-white font-semibold text-lg">Liên hệ</h4>
                         <div className="space-y-3">
                             <div className="flex items-center space-x-3">
-                                <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
-                                <span className="text-gray-400 text-sm">Cầu Giấy , Hà Nội</span>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
-                                <span className="text-gray-400 text-sm">+84 0376 940 811</span>
-                            </div>
-                            <div className="flex items-center space-x-3">
                                 <Mail className="w-4 h-4 text-red-500 flex-shrink-0" />
                                 <span className="text-gray-400 text-sm">mephim@gmail.com</span>
                             </div>

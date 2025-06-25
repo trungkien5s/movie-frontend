@@ -1,116 +1,213 @@
-import { ChevronRight } from "lucide-react"
-import MovieCard from "./MovieCard";
+import { useEffect, useState, useRef } from "react"
+import axios from "axios"
+import MovieCarousel from "./MovieCarousel";
 
 export default function MovieList() {
-    const movies = [
-        {
-            id: 1,
-            title: "Avengers: Endgame",
-            year: "2019",
-            rating: "8.4",
-            image: "https://static.nutscdn.com/vimg/300-0/fd9e8ba1244e513e74534f0d325c9481.jpg",
-            quality: "4K",
-            duration: "3h 1m",
-        },
-        {
-            id: 2,
-            title: "Spider-Man: No Way Home",
-            year: "2021",
-            rating: "8.2",
-            image: "https://static.nutscdn.com/vimg/300-0/af4a1ac52ebce28e25ba85f931cf4677.jpg",
-            quality: "HD",
-            duration: "2h 28m",
-        },
-        {
-            id: 3,
-            title: "The Batman",
-            year: "2022",
-            rating: "7.8",
-            image: "https://static.nutscdn.com/vimg/300-0/4aeaea1cb315df3fe12b29639399ad89.jpg",
-            quality: "4K",
-            duration: "2h 56m",
-        },
-        {
-            id: 4,
-            title: "Top Gun: Maverick",
-            year: "2022",
-            rating: "8.3",
-            image: "https://static.nutscdn.com/vimg/300-0/8fadb7f5058600929db40afc487d993a.jpg",
-            quality: "4K",
-            duration: "2h 11m",
-        },
-        {
-            id: 5,
-            title: "Black Panther",
-            year: "2018",
-            rating: "7.3",
-            image: "https://static.nutscdn.com/vimg/300-0/0dac32eb8c6bce10eaf25ae363fbe353.jpg",
-            quality: "HD",
-            duration: "2h 14m",
-        },
-        {
-            id: 6,
-            title: "Dune",
-            year: "2021",
-            rating: "8.0",
-            image: "https://static.nutscdn.com/vimg/300-0/c27a7db229330749e925e8ac2ea18918.jpg",
-            quality: "4K",
-            duration: "2h 35m",
-        },
-    ]
+    const [popularMovies, setPopularMovies] = useState([])
+    const [recentMovies, setRecentMovies] = useState([])
+    const [highlyRatedMovies, setHighlyRatedMovies] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [retryCount, setRetryCount] = useState(0)
+    const hasFetched = useRef(false)
+
+    // Prevent multiple API calls
+    useEffect(() => {
+        if (hasFetched.current) return
+        hasFetched.current = true
+        fetchMovies()
+    }, [])
+
+    const fetchMovies = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+
+            const baseUrl = process.env.REACT_APP_API_URL || "https://movie-streaming-api.onrender.com"
+
+            // Sử dụng đúng endpoints từ API documentation
+            const endpoints = {
+                popular: `${baseUrl}/api/movies/popular/`,
+                recent: `${baseUrl}/api/movies/recent/`,
+                rated: `${baseUrl}/api/movies/highly-rated/`,
+            }
+
+            console.log("Calling APIs:", endpoints)
+
+            // Tăng timeout và thêm retry logic
+            const axiosConfig = {
+                timeout: 30000, // 30 giây
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                params: { page: 1, limit: 12 },
+            }
+
+            // Gọi từng API riêng biệt với error handling tốt hơn
+            const fetchWithRetry = async (url, retries = 2) => {
+                for (let i = 0; i <= retries; i++) {
+                    try {
+                        console.log(`Fetching ${url} (attempt ${i + 1})`)
+                        const response = await axios.get(url, axiosConfig)
+
+                        // Kiểm tra response có hợp lệ không
+                        if (!response.data) {
+                            throw new Error("Empty response")
+                        }
+
+                        console.log(`Success ${url}:`, response.data)
+                        return response.data
+                    } catch (err) {
+                        console.error(`Error ${url} (attempt ${i + 1}):`, err.message)
+
+                        if (i === retries) {
+                            // Nếu hết retry, trả về empty data thay vì throw error
+                            return { data: [] }
+                        }
+
+                        // Wait before retry
+                        await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
+                    }
+                }
+            }
+
+            // Fetch all APIs concurrently với timeout riêng
+            const [popularData, recentData, ratedData] = await Promise.allSettled([
+                fetchWithRetry(endpoints.popular),
+                fetchWithRetry(endpoints.recent),
+                fetchWithRetry(endpoints.rated),
+            ])
+
+            // Process results
+            const extractMovies = (result) => {
+                if (result.status === "fulfilled" && result.value?.data) {
+                    return Array.isArray(result.value.data) ? result.value.data : []
+                }
+                return []
+            }
+
+            const popularMoviesData = extractMovies(popularData)
+            const recentMoviesData = extractMovies(recentData)
+            const ratedMoviesData = extractMovies(ratedData)
+
+            console.log("Final extracted data:", {
+                popular: popularMoviesData.length,
+                recent: recentMoviesData.length,
+                rated: ratedMoviesData.length,
+            })
+
+            setPopularMovies(popularMoviesData)
+            setRecentMovies(recentMoviesData)
+            setHighlyRatedMovies(ratedMoviesData)
+
+            // Nếu tất cả APIs đều trả về rỗng
+            if (popularMoviesData.length === 0 && recentMoviesData.length === 0 && ratedMoviesData.length === 0) {
+                setError("Không thể tải dữ liệu phim. Server có thể đang bận.")
+            }
+        } catch (err) {
+            console.error("Lỗi tổng thể:", err)
+            setError("Lỗi kết nối đến server. Vui lòng thử lại sau.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const retryFetch = () => {
+        setRetryCount((prev) => prev + 1)
+        hasFetched.current = false
+        fetchMovies()
+    }
+
+    if (loading) {
+        return (
+            <section className="py-12 bg-gray-900">
+                <div className="container mx-auto px-4">
+                    <div className="text-white text-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-yellow-500 border-t-transparent mx-auto mb-4"></div>
+                        <p className="text-lg">Đang tải dữ liệu phim...</p>
+                        <p className="text-sm text-gray-400 mt-2">Server có thể phản hồi chậm, vui lòng đợi...</p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    if (error) {
+        return (
+            <section className="py-12 bg-gray-900">
+                <div className="container mx-auto px-4">
+                    <div className="text-center py-20">
+                        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Lỗi tải dữ liệu</h2>
+                        <p className="text-gray-400 mb-4">{error}</p>
+                        <div className="bg-gray-800 rounded-lg p-4 mb-6 text-left max-w-2xl mx-auto">
+                            <h3 className="text-white font-semibold mb-2">Thông tin debug:</h3>
+                            <p className="text-gray-300 text-sm">
+                                API URL: {process.env.REACT_APP_API_URL || "https://movie-streaming-api.onrender.com"}
+                            </p>
+                            <p className="text-gray-300 text-sm">Retry count: {retryCount}</p>
+                            <p className="text-gray-300 text-sm">Status: Server có thể đang bận hoặc phản hồi chậm</p>
+                        </div>
+                        <button
+                            onClick={retryFetch}
+                            className="bg-yellow-500 text-black px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                        >
+                            Thử lại ({retryCount + 1})
+                        </button>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    // Kiểm tra nếu tất cả danh sách đều rỗng
+    const hasAnyMovies = popularMovies.length > 0 || recentMovies.length > 0 || highlyRatedMovies.length > 0
+
+    if (!hasAnyMovies) {
+        return (
+            <section className="py-12 bg-gray-900">
+                <div className="container mx-auto px-4">
+                    <div className="text-center py-20">
+                        <div className="text-gray-400 text-6xl mb-4">📽️</div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Chưa có dữ liệu phim</h2>
+                        <p className="text-gray-400 mb-6">API kết nối thành công nhưng chưa có phim nào</p>
+                        <button
+                            onClick={retryFetch}
+                            className="bg-yellow-500 text-black px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                        >
+                            Tải lại
+                        </button>
+                    </div>
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section className="py-12 bg-gray-900">
             <div className="container mx-auto px-4">
-                {/* Section Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white">Bạn đang quan tâm gì?</h2>
-                    <button className="flex items-center text-yellow-500 hover:text-yellow-400 transition-colors">
-                        <span className="mr-2">Xem tất cả</span>
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
-                </div>
+                {/* Phim phổ biến */}
+                {popularMovies.length > 0 && (
+                    <MovieCarousel movies={popularMovies} title="Thịnh hành" autoScroll={true} />
+                )}
 
-                {/* Movies Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
-                    {movies.map((movie) => (
-                        <MovieCard key={movie.id} movie={movie} />
-                    ))}
-                </div>
+                {/* Phim mới nhất */}
+                {recentMovies.length > 0 && <MovieCarousel movies={recentMovies} title="Phim mới nhất" autoScroll={true} />}
 
-                {/* Additional Sections */}
-                <div className="mt-16">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white">Phim Mới Cập Nhật</h2>
-                        <button className="flex items-center text-yellow-500 hover:text-yellow-400 transition-colors">
-                            <span className="mr-2">Xem tất cả</span>
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
-                        {movies
-                            .slice()
-                            .reverse()
-                            .map((movie) => (
-                                <MovieCard key={`new-${movie.id}`} movie={movie} />
-                            ))}
-                    </div>
-                </div>
+                {/* Phim đánh giá cao */}
+                {highlyRatedMovies.length > 0 && (
+                    <MovieCarousel movies={highlyRatedMovies} title="Phim đề cử" autoScroll={true} />
+                )}
 
-                <div className="mt-16">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white">Phim Lẻ Hay Nhất</h2>
-                        <button className="flex items-center text-yellow-500 hover:text-yellow-400 transition-colors">
-                            <span className="mr-2">Xem tất cả</span>
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
+                {/* Fallback nếu chỉ có một số section có data */}
+                {popularMovies.length === 0 && recentMovies.length === 0 && highlyRatedMovies.length === 0 && (
+                    <div className="text-center py-12">
+                        <div className="text-yellow-500 text-4xl mb-4">⏳</div>
+                        <h3 className="text-xl font-bold text-white mb-2">Đang tải thêm phim...</h3>
+                        <p className="text-gray-400">Một số danh mục có thể tải chậm hơn</p>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
-                        {movies.map((movie) => (
-                            <MovieCard key={`best-${movie.id}`} movie={movie} />
-                        ))}
-                    </div>
-                </div>
+                )}
             </div>
         </section>
     )

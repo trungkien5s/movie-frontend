@@ -1,6 +1,6 @@
 import React from 'react';
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
+import Header from "../../layout/userLayout/Header";
+import Footer from "../../layout/userLayout/Footer";
 
 const SeriesPage = () => {
     return (

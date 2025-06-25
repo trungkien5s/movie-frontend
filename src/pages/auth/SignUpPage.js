@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Label from "../../components/label/Label";
 import Input from "../../components/input/Input";
 import Button from "../../components/button/Button";
 import FormGroup from "../../components/common/FormGroup";
@@ -13,14 +12,17 @@ import IconEyeToggle from "../../components/icons/IconEyeToggle";
 import LayoutAuthentication from "../../components/layoutauthen/LayoutAuthentication";
 
 const schema = yup.object({
-    firstname: yup.string().required("Họ là bắt buộc"),
-    lastname: yup.string().required("Tên là bắt buộc"),
+    fullname: yup.string().required("Họ là bắt buộc"),
+    username: yup.string().required("Tên là bắt buộc"),
     email: yup.string().email("Email không hợp lệ").required("Email là bắt buộc"),
-    phone_number: yup.string().required("Số điện thoại là bắt buộc"),
-    address: yup.string().required("Địa chỉ là bắt buộc"),
-    date_of_birth: yup.string().required("Ngày sinh là bắt buộc"),
-    gender: yup.string().required("Giới tính là bắt buộc"),
-    password: yup.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự").required("Mật khẩu là bắt buộc"),
+    password: yup
+        .string()
+        .required("Mật khẩu là bắt buộc")
+        .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+        .matches(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ cái viết hoa")
+        .matches(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ cái thường")
+        .matches(/[0-9]/, "Mật khẩu phải có ít nhất 1 số")
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"),
     confirmpassword: yup.string()
         .oneOf([yup.ref('password'), null], 'Mật khẩu xác nhận không khớp')
         .required("Xác nhận mật khẩu là bắt buộc"),
@@ -47,27 +49,24 @@ const SignUpPage = () => {
 
         try {
             const payload = {
-                first_name: values.firstname,
-                last_name: values.lastname,
+                full_name: values.fullname,
+                username: values.username,
                 email: values.email,
-                phone_number: values.phone_number,
-                address: values.address,
-                date_of_birth: values.date_of_birth,
-                gender: values.gender,
                 password: values.password,
-                role: false, // Giá trị mặc định cho role
+                role: false, // Mặc định là người dùng thường
             };
 
             console.log("Payload gửi lên server:", payload);
 
-            const response = await axios.post(`${apiURL}/signup`, payload, {
+            const response = await axios.post(`${apiURL}/api/auth/register`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
 
-            if (response.status === 200) {
+            if (response.status === 201) {
                 const serverMessage = response.data.message || "Đăng ký thành công!";
+                alert(serverMessage)
                 navigate("/auth/sign-in", { state: { message: serverMessage } });
             } else {
                 setErrorMessage("Không thể đăng ký. Vui lòng thử lại.");
@@ -76,60 +75,84 @@ const SignUpPage = () => {
             console.error("Error:", error);
 
             if (error.response) {
-                console.error("Chi tiết lỗi từ server:", error.response.data);
-                const serverError = error.response.data.detail || error.response.data.message;
-                setErrorMessage(serverError || "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại.");
-            } else {
+                let errorMsg = "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại.";
+
+                // Xử lý error response từ server
+                const errorData = error.response.data;
+
+                if (typeof errorData === 'string') {
+                    errorMsg = errorData;
+                } else if (errorData?.message && typeof errorData.message === 'string') {
+                    errorMsg = errorData.message;
+                } else if (errorData?.detail) {
+                    // Xử lý trường hợp detail là object hoặc array
+                    if (typeof errorData.detail === 'string') {
+                        errorMsg = errorData.detail;
+                    } else if (Array.isArray(errorData.detail)) {
+                        // Nếu detail là array các lỗi validation
+                        errorMsg = errorData.detail.map(err => {
+                            if (typeof err === 'string') return err;
+                            if (err.msg) return err.msg;
+                            return JSON.stringify(err);
+                        }).join(', ');
+                    } else if (typeof errorData.detail === 'object') {
+                        // Nếu detail là object
+                        errorMsg = errorData.detail.msg || JSON.stringify(errorData.detail);
+                    }
+                }
+
+                setErrorMessage(errorMsg);
+            } else if (error.request) {
                 setErrorMessage("Không thể kết nối tới server. Vui lòng kiểm tra kết nối mạng và thử lại.");
+            } else {
+                setErrorMessage("Đã xảy ra lỗi không xác định. Vui lòng thử lại.");
             }
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <LayoutAuthentication title="Đăng ký">
             <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
                 {/* Error Message */}
                 {errorMessage && (
-                    <div className="bg-orange-600 text-white px-4 py-3 rounded text-sm">
+                    <div className="bg-red-600 text-white px-4 py-3 rounded text-sm">
                         {errorMessage}
                     </div>
                 )}
 
-                {/* First Name Input */}
                 <FormGroup>
                     <div className="relative">
                         <Input
                             control={control}
-                            name="firstname"
+                            name="username"
                             type="text"
                             className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none placeholder-gray-400"
-                            placeholder="Họ"
-                            error={errors.firstname?.message}
+                            placeholder="Tên đăng nhập"
+                            error={errors.username?.message}
                         />
                     </div>
-                    {errors.firstname && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.firstname.message}</p>
+                    {errors.username && (
+                        <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
                     )}
                 </FormGroup>
 
-                {/* Last Name Input */}
                 <FormGroup>
                     <div className="relative">
                         <Input
                             control={control}
-                            name="lastname"
+                            name="fullname"
                             type="text"
                             className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none placeholder-gray-400"
-                            placeholder="Tên"
-                            error={errors.lastname?.message}
+                            placeholder="Họ tên"
+                            error={errors.fullname?.message}
                         />
                     </div>
-                    {errors.lastname && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.lastname.message}</p>
+                    {errors.fullname && (
+                        <p className="text-red-500 text-sm mt-1">{errors.fullname.message}</p>
                     )}
                 </FormGroup>
+
 
                 {/* Email Input */}
                 <FormGroup>
@@ -144,77 +167,10 @@ const SignUpPage = () => {
                         />
                     </div>
                     {errors.email && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.email.message}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                     )}
                 </FormGroup>
 
-                {/* Phone Number Input */}
-                <FormGroup>
-                    <div className="relative">
-                        <Input
-                            control={control}
-                            name="phone_number"
-                            type="text"
-                            className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none placeholder-gray-400"
-                            placeholder="Số điện thoại"
-                            error={errors.phone_number?.message}
-                        />
-                    </div>
-                    {errors.phone_number && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.phone_number.message}</p>
-                    )}
-                </FormGroup>
-
-                {/* Address Input */}
-                {/*<FormGroup>*/}
-                {/*    <div className="relative">*/}
-                {/*        <Input*/}
-                {/*            control={control}*/}
-                {/*            name="address"*/}
-                {/*            type="text"*/}
-                {/*            className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none placeholder-gray-400"*/}
-                {/*            placeholder="Địa chỉ"*/}
-                {/*            error={errors.address?.message}*/}
-                {/*        />*/}
-                {/*    </div>*/}
-                {/*    {errors.address && (*/}
-                {/*        <p className="text-orange-500 text-sm mt-1">{errors.address.message}</p>*/}
-                {/*    )}*/}
-                {/*</FormGroup>*/}
-
-                {/*/!* Date of Birth Input *!/*/}
-                {/*<FormGroup>*/}
-                {/*    <div className="relative">*/}
-                {/*        <Input*/}
-                {/*            control={control}*/}
-                {/*            name="date_of_birth"*/}
-                {/*            type="date"*/}
-                {/*            className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none placeholder-gray-400"*/}
-                {/*            error={errors.date_of_birth?.message}*/}
-                {/*        />*/}
-                {/*    </div>*/}
-                {/*    {errors.date_of_birth && (*/}
-                {/*        <p className="text-orange-500 text-sm mt-1">{errors.date_of_birth.message}</p>*/}
-                {/*    )}*/}
-                {/*</FormGroup>*/}
-
-                {/* Gender Select */}
-                {/*<FormGroup>*/}
-                {/*    <div className="relative">*/}
-                {/*        <select*/}
-                {/*            {...control.register("gender")}*/}
-                {/*            className="w-full bg-gray-700 text-white px-4 py-4 rounded border-0 focus:bg-gray-600 focus:outline-none"*/}
-                {/*        >*/}
-                {/*            <option value="">Chọn giới tính</option>*/}
-                {/*            <option value="Male">Nam</option>*/}
-                {/*            <option value="Female">Nữ</option>*/}
-                {/*            <option value="Other">Khác</option>*/}
-                {/*        </select>*/}
-                {/*    </div>*/}
-                {/*    {errors.gender && (*/}
-                {/*        <p className="text-orange-500 text-sm mt-1">{errors.gender.message}</p>*/}
-                {/*    )}*/}
-                {/*</FormGroup>*/}
 
                 {/* Password Input */}
                 <FormGroup>
@@ -236,7 +192,7 @@ const SignUpPage = () => {
                         </button>
                     </div>
                     {errors.password && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.password.message}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
                     )}
                 </FormGroup>
 
@@ -260,7 +216,7 @@ const SignUpPage = () => {
                         </button>
                     </div>
                     {errors.confirmpassword && (
-                        <p className="text-orange-500 text-sm mt-1">{errors.confirmpassword.message}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors.confirmpassword.message}</p>
                     )}
                 </FormGroup>
 

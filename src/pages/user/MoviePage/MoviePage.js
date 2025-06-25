@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react"
 import { Search, Filter, Grid, List } from "lucide-react"
-import Header from "../../components/layout/Header";
-import Button from "../../components/button/Button";
-import Input from "../../components/input/Input";
-import MovieCard from "../../components/movie/MovieCard";
-import Pagination from "../../components/pagination/Pagination";
-import Footer from "../../components/layout/Footer";
+import Header from "../../layout/userLayout/Header";
+import Button from "../../../components/button/Button";
+import Input from "../../../components/input/Input";
+import MovieCard from "../../../components/movie/MovieCard";
+import Pagination from "../../../components/pagination/Pagination";
+import Footer from "../../layout/userLayout/Footer";
 
 
 // Mock data cho phim lẻ

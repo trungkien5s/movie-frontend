@@ -1,8 +1,8 @@
 
 import { useState } from "react"
 import { Play, Heart, Info } from "lucide-react"
-import {Badge} from "../UI/badge";
-import Button from "../button/Button";
+import {Badge} from "../../../components/UI/badge";
+import Button from "../../../components/button/Button";
 
 export default function HeroSection() {
     const moviesData = [
