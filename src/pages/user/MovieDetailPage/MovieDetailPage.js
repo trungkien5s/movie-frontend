@@ -18,6 +18,8 @@ const MovieDetailPage = () => {
 
     useEffect(() => {
         const fetchMovieDetails = async () => {
+            setLoading(true)        // ✅ show loading
+            setError(null)          // reset error
             try {
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/movies/${movie_id}`)
                 setMovie(res.data.movie)
@@ -26,7 +28,7 @@ const MovieDetailPage = () => {
                 console.error("Lỗi khi tải chi tiết phim:", err)
                 setError("Không thể tải chi tiết phim.")
             } finally {
-                setLoading(false)
+                setLoading(false)   // ✅ hide loading
             }
         }
 
@@ -80,10 +82,28 @@ const MovieDetailPage = () => {
         return (
             <div className="min-h-screen bg-gray-900 text-white">
                 <Header />
-                <div className="flex items-center justify-center min-h-[60vh]">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-yellow-500 border-t-transparent mx-auto mb-4"></div>
-                        <p className="text-gray-400">Đang tải chi tiết phim...</p>
+                <div className="flex items-center justify-center min-h-[70vh] px-4">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                        <svg
+                            className="animate-spin h-12 w-12 text-yellow-500"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 01-8 8z"
+                            />
+                        </svg>
                     </div>
                 </div>
                 <Footer />
@@ -311,7 +331,7 @@ const MovieDetailPage = () => {
                                 <div
                                     key={related.movieId}
                                     className="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-all duration-300 cursor-pointer group transform hover:scale-105 shadow-lg hover:shadow-xl"
-                                    onClick={() => navigate(`/movie/${related.movieId}`)}
+                                    onClick={() => navigate(`/movies/${related.movieId}`)}
                                 >
                                     <div className="aspect-[2/3] bg-gray-700 relative overflow-hidden">
                                         <img

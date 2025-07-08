@@ -1,7 +1,10 @@
-import { Play, Star, Eye, Calendar } from "lucide-react"
-import { Badge } from "../UI/badge"
+import { Play, Star } from "lucide-react";
+import { Badge } from "../UI/badge";
+import { useNavigate } from "react-router-dom"; // ✅ thêm dòng này
 
 export default function MovieCard({ movie, viewMode = "grid" }) {
+    const navigate = useNavigate();
+
     const movieData = {
         id: movie.movieId || movie.id,
         title: movie.title,
@@ -17,35 +20,35 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
         quality: movie.isHighlyRated ? "HD" : "SD",
         views: Math.floor(Math.random() * 100000),
         description: `${movie.title} - ${movie.genres?.join(", ") || "Phim hay"}`,
-    }
+    };
+
+    const handleClick = () => {
+        navigate(`/movies/${movieData.id}`);
+    };
 
     if (viewMode === "list") {
-        // ... Giữ nguyên nếu bạn dùng chế độ list view
-        return <div>List view here...</div>
+        return <div>List view here...</div>;
     }
 
-    // ✅ Grid view với khung đồng đều
     return (
-        <div className="group cursor-pointer h-full">
+        <div
+            onClick={handleClick}
+            className="group cursor-pointer h-full"
+        >
             <div className="relative overflow-hidden rounded-lg bg-gray-800 transition-transform duration-300 group-hover:scale-105 h-full flex flex-col">
-                {/* Fixed-height poster container */}
                 <div className="relative w-full h-[280px] bg-gray-700 flex-shrink-0">
                     <img
                         src={movieData.image}
                         alt={movieData.title}
                         onError={(e) => {
-                            e.currentTarget.onerror = null
-                            e.currentTarget.src = ""
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "";
                         }}
                         className="w-full h-full object-cover rounded-t-lg"
                     />
-
-                    {/* Quality badge */}
                     <Badge className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1">
                         {movieData.quality}
                     </Badge>
-
-                    {/* Status badges */}
                     <div className="absolute top-2 right-2 flex flex-col gap-1">
                         {movieData.isPopular && (
                             <Badge className="bg-red-600 text-white text-xs px-2 py-1">Hot</Badge>
@@ -54,23 +57,17 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                             <Badge className="bg-yellow-600 text-white text-xs px-2 py-1">⭐</Badge>
                         )}
                     </div>
-
-                    {/* Hover play button */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
                             <Play className="w-6 h-6 text-black fill-current ml-1" />
                         </div>
                     </div>
-
-                    {/* Duration */}
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
                         {movieData.duration}
                     </div>
                 </div>
 
-                {/* Movie info - Fixed height content area */}
                 <div className="p-3 flex flex-col justify-between flex-grow min-h-[100px]">
-                    {/* Title section - Fixed height */}
                     <div className="mb-2">
                         <h3
                             className="text-white font-semibold text-sm leading-tight group-hover:text-yellow-500 transition-colors"
@@ -79,18 +76,15 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden',
-                                height: '2.5rem', // Fixed height for 2 lines
-                                lineHeight: '1.25rem'
+                                height: '2.5rem',
+                                lineHeight: '1.25rem',
                             }}
                             title={movieData.title}
                         >
                             {movieData.title}
                         </h3>
                     </div>
-
-                    {/* Bottom info section */}
                     <div className="space-y-1">
-                        {/* Year and rating */}
                         <div className="flex items-center justify-between text-xs text-gray-400">
                             <span>{movieData.year}</span>
                             <div className="flex items-center space-x-1">
@@ -98,8 +92,6 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                                 <span>{movieData.rating.toFixed(1)}</span>
                             </div>
                         </div>
-
-                        {/* Genre and votes */}
                         <div className="flex items-center justify-between text-xs text-gray-500">
                             <span className="truncate mr-2">{movieData.primaryGenre}</span>
                             <span className="flex-shrink-0">
@@ -113,5 +105,5 @@ export default function MovieCard({ movie, viewMode = "grid" }) {
                 </div>
             </div>
         </div>
-    )
+    );
 }
