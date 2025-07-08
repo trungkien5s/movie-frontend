@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import {useLocation} from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -26,17 +27,20 @@ export function AuthProvider({ children }) {
     };
 
     // Load và validate user session khi app khởi động
+// ở trên component
+    const location = useLocation();
+
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
                 const storedToken = localStorage.getItem("access_token");
 
                 if (!storedToken) {
+                    clearAuthData();
                     setLoading(false);
                     return;
                 }
 
-                // Validate token với server
                 const userData = await validateToken(storedToken);
 
                 if (userData) {
@@ -50,12 +54,8 @@ export function AuthProvider({ children }) {
 
                     setUser(userInfo);
                     setIsAuthenticated(true);
-                    // Cập nhật lại user info trong localStorage để đồng bộ
                     localStorage.setItem("user", JSON.stringify(userInfo));
-                    console.log("Auth status checked - User authenticated:", userInfo);
                 } else {
-                    // Token không hợp lệ, clear storage
-                    console.log("Token validation failed - clearing auth data");
                     clearAuthData();
                 }
             } catch (error) {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
         };
 
         checkAuthStatus();
-    }, []);
+    }, [location.pathname]); //
 
     // Helper function để clear auth data
     const clearAuthData = () => {
@@ -104,7 +104,6 @@ export function AuthProvider({ children }) {
             const token = localStorage.getItem("access_token");
 
             if (token) {
-                // Gọi API logout để invalidate token trên server
                 await axios.post(`${apiURL}/api/auth/logout`, {}, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -113,11 +112,13 @@ export function AuthProvider({ children }) {
             }
         } catch (error) {
             console.error("Logout API error:", error);
-            // Vẫn tiếp tục logout ở client dù API fail
         } finally {
-            // Clear local data
             clearAuthData();
             console.log("Đăng xuất thành công");
+            console.log("After clearAuthData, localStorage:", localStorage.getItem("access_token"), localStorage.getItem("user"));
+
+            console.log("After clearAuthData, localStorage:", localStorage.getItem("access_token"), localStorage.getItem("user"));
+            window.location.href = "/auth/sign-in"; // Chuyển hướng về trang đăng nhập
         }
     };
 
@@ -168,7 +169,6 @@ export function AuthProvider({ children }) {
         };
     }, []);
 
-    // FIX: Thêm function để refresh user data
     const refreshUser = async () => {
         try {
             const token = localStorage.getItem("access_token");

@@ -9,6 +9,9 @@ import {AuthProvider} from "./components/contexts/AuthContext";
 import SeriesPage from "./pages/user/MoviePage/SeriesPage";
 import FilmList from "./pages/user/ListFilmPage/FilmList";
 import MovieDetailPage from "./pages/user/MovieDetailPage/MovieDetailPage";
+import SearchResult from "./pages/user/SearchResult/SearchResult";
+import GenreResultPage from "./pages/user/GenrePage/GenreResultPage";
+import AllGenrePage from "./pages/user/GenrePage/AllGenrePage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -26,9 +29,11 @@ function App() {
           {/* Route dành cho người dùng */}
           <Route path="/auth/sign-in" element={<SignInPage />} />
           <Route path="/phim-le" element={<MoviePage />} />
+          <Route path="/search-results" element={<SearchResult />} />
           <Route path="/movies/" element={<FilmList/>} />
           <Route path="/movies/:movie_id" element={<MovieDetailPage/>} />
-          <Route path="/movies/genre/:genre_name" element={<MovieDetailPage/>} />
+          {/*<Route path="/genres" element={<AllGenrePage/>} />*/}
+          <Route path="/genre/:genre_name" element={<GenreResultPage/>} />
           <Route path="/phim-bo" element={<SeriesPage />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/sign-up" element={<SignUpPage />} />

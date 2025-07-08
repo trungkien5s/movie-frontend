@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }) {
     useEffect(() => {
         if (!loading && !isAuthenticated) {
             console.log("User not authenticated, redirecting to sign-in")
-            navigate("/sign-in")
+            navigate("/auth/sign-in")
         }
     }, [isAuthenticated, loading, navigate])
 
